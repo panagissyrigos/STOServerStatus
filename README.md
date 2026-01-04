@@ -8,7 +8,7 @@ I made a simple server status monitoring tool for Star Trek Online servers. It p
 - Provides a way to add it to your computer's Task scheduler to startup automatically.
 - Lightweight and easy to use.
 - Single executable file.
-- Can be built using cmake as follows:
+- Clone the project and build using cmake as follows:
   ```
   md build
   cd build

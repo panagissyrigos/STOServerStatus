@@ -1,0 +1,12 @@
+#pragma once
+
+#define IDI_APP 101
+#define IDI_ONLINE 102
+#define IDI_MAINTENANCE 103
+#define IDI_ICONERROR 104
+
+#define IDM_OPEN_STATUS_PAGE 40001
+#define IDM_CHECK_NOW 40002
+#define IDM_STARTUP_TASK  40003
+#define IDM_EXIT 40004
+

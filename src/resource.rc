@@ -1,0 +1,6 @@
+#include "resource.h"
+
+IDI_APP           ICON "circle_green.ico"
+IDI_ONLINE        ICON "circle_green.ico"
+IDI_MAINTENANCE   ICON "circle_red.ico"
+IDI_ICONERROR         ICON "circle_grey.ico"

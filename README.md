@@ -8,6 +8,7 @@ I made a simple server status monitoring tool for Star Trek Online servers. It p
 - Provides a way to add it to your computer's Task scheduler to startup automatically.
 - Lightweight and easy to use.
 - Single executable file.
+- I'm encrypting the server status url because I heard somewhere that the devs are scraping github for mentions of the server.
 - Clone the project and build using cmake as follows:
   ```
   md build

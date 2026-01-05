@@ -14,10 +14,9 @@ using namespace std;
 
 namespace
 {
-    constexpr wchar_t DEFAULT_STATUS_URL[] = L"AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAATk8xiDB5NEO1lmy80j9SzAAAAAACAAAAAAAQZgAAAAEAACAAAACA1YHRPGjCA2MrFzf4zD31QVrTq10y63+G0YgiRj0YVgAAAAAOgAAAAAIAACAAAADDBVRMEt99iQcy+vkXmM8dWoDxtSq3NBGp1s06YAk1zoAAAAB/cvw4X7KRTpA+Uv9eF928gz/NVr90+SsPrx3b3beSdIIteZ/g2YngwwCW3l+hr9mS566eESFPcoRMWUQaA6xz7LpRGyPtEMq5KrPXGh3csrTSJRP4vp2NB+awa+rnSlXA7vUDU/0R1yr+EZg5/LrafhrXxZzjpwEsH7KoodIc/0AAAADiG8/WNGZhvQ5z3URDCCG4F/xb0IKEOStAxCsE84W1EhUMh6BvdO+9Za1TbTIlFy+PqfZQwHt/VxIxoG16H4Lh";
+    constexpr wchar_t DEFAULT_STATUS_URL[] = L"/+rC0jh59WFJ8r5AlmPbdrhMnXotpeYf+q+onwpf/8Xh/ASWAY1YWEknvTywI9LEb4C+Rk5WlxC7PyP3LhbBhrjKE4YDZdOpqD3gvrW0Wa7PeGDA5x1mceqpzuIKG1W9ZQetGkwOxEgbeNN1o+F/943W7zVjNivK4i/c/VLL9NA=";
     constexpr wchar_t DEFAULT_STATUS_PAGE[] = L"https://www.arcgames.com/en/games/star-trek-online/news";
     static constexpr wchar_t TASK_NAME[] = L"STO Status Tray";
-
 }
 
 App::App(HINSTANCE hInstance)
@@ -119,8 +118,13 @@ bool App::InitResources()
     if (!menu_)
         return false;
 
+    std::wstring checkNowText =
+        std::wstring(L"Check now (") +
+        Crypto::DecryptString(L"STOSEKRIT", DEFAULT_STATUS_URL) +
+        L")";
+
     AppendMenuW(menu_, MF_STRING, IDM_OPEN_STATUS_PAGE, L"Open status page");
-    AppendMenuW(menu_, MF_STRING, IDM_CHECK_NOW, L"Check now");
+    AppendMenuW(menu_, MF_STRING, IDM_CHECK_NOW, checkNowText.c_str());
     AppendMenuW(menu_, MF_STRING, IDM_STARTUP_TASK, L"Run at logon");
     AppendMenuW(menu_, MF_SEPARATOR, 0, nullptr);
     AppendMenuW(menu_, MF_STRING, IDM_EXIT, L"Exit");

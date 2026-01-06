@@ -1,5 +1,6 @@
 #include "StatusChecker.h"
 #include "HttpClient.h"
+#include <windows.h>
 
 #include <algorithm>
 
@@ -43,16 +44,14 @@ StatusResult StatusChecker::InterpretBody(const std::string &body)
     StatusResult r;
 
     const std::string lower = ToLower(body);
-
-    // These are intentionally broad; tweak once you confirm the real response format.
-    if (Contains(lower, "maintenance") || Contains(lower, "down") || Contains(lower, "offline"))
+    if (Contains(lower, "\"server_status\":\"down\""))
     {
         r.state = ServerState::Maintenance;
         r.detail = L"Maintenance / Offline (matched response text)";
         return r;
     }
 
-    if (Contains(lower, "online") || Contains(lower, "up") || Contains(lower, "operational"))
+    if (Contains(lower, "\"server_status\":\"up\""))
     {
         r.state = ServerState::Online;
         r.detail = L"Online (matched response text)";

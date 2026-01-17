@@ -3,6 +3,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <winhttp.h>
+#include <stdexcept>
 
 #include <vector>
 
@@ -52,111 +53,116 @@ namespace
 
 bool HttpClient::Get(const std::wstring &url, std::string &responseBody, std::wstring &errorMessage) const
 {
-    responseBody.clear();
-    errorMessage.clear();
+    try {
+        responseBody.clear();
+        errorMessage.clear();
 
-    URL_COMPONENTS uc{};
-    uc.dwStructSize = sizeof(uc);
+        URL_COMPONENTS uc{};
+        uc.dwStructSize = sizeof(uc);
 
-    wchar_t host[256]{};
-    wchar_t path[2048]{};
+        wchar_t host[256]{};
+        wchar_t path[2048]{};
 
-    uc.lpszHostName = host;
-    uc.dwHostNameLength = static_cast<DWORD>(std::size(host));
-    uc.lpszUrlPath = path;
-    uc.dwUrlPathLength = static_cast<DWORD>(std::size(path));
+        uc.lpszHostName = host;
+        uc.dwHostNameLength = static_cast<DWORD>(std::size(host));
+        uc.lpszUrlPath = path;
+        uc.dwUrlPathLength = static_cast<DWORD>(std::size(path));
 
-    if (!WinHttpCrackUrl(url.c_str(), 0, 0, &uc))
-    {
-        errorMessage = L"WinHttpCrackUrl failed: " + WinHttpErrorMessage(GetLastError());
-        return false;
-    }
-
-    const bool isHttps = (uc.nScheme == INTERNET_SCHEME_HTTPS);
-    const INTERNET_PORT port = uc.nPort;
-
-    WinHttpHandle session(WinHttpOpen(L"stostatus-tray/1.0",
-                                      WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
-                                      WINHTTP_NO_PROXY_NAME,
-                                      WINHTTP_NO_PROXY_BYPASS,
-                                      0));
-    if (!session)
-    {
-        errorMessage = L"WinHttpOpen failed: " + WinHttpErrorMessage(GetLastError());
-        return false;
-    }
-
-    // Keep timeouts sane for a tray utility.
-    WinHttpSetTimeouts(session, 5000, 5000, 5000, 5000);
-
-    WinHttpHandle connect(WinHttpConnect(session, std::wstring(host, uc.dwHostNameLength).c_str(), port, 0));
-    if (!connect)
-    {
-        errorMessage = L"WinHttpConnect failed: " + WinHttpErrorMessage(GetLastError());
-        return false;
-    }
-
-    const std::wstring urlPath = std::wstring(path, uc.dwUrlPathLength);
-    WinHttpHandle request(WinHttpOpenRequest(connect,
-                                             L"GET",
-                                             urlPath.c_str(),
-                                             nullptr,
-                                             WINHTTP_NO_REFERER,
-                                             WINHTTP_DEFAULT_ACCEPT_TYPES,
-                                             isHttps ? WINHTTP_FLAG_SECURE : 0));
-    if (!request)
-    {
-        errorMessage = L"WinHttpOpenRequest failed: " + WinHttpErrorMessage(GetLastError());
-        return false;
-    }
-
-    // Helps some endpoints; harmless otherwise.
-    WinHttpAddRequestHeaders(request, L"Accept: */*\r\n", -1L, WINHTTP_ADDREQ_FLAG_ADD);
-
-    if (!WinHttpSendRequest(request,
-                            WINHTTP_NO_ADDITIONAL_HEADERS,
-                            0,
-                            WINHTTP_NO_REQUEST_DATA,
-                            0,
-                            0,
-                            0))
-    {
-        errorMessage = L"WinHttpSendRequest failed: " + WinHttpErrorMessage(GetLastError());
-        return false;
-    }
-
-    if (!WinHttpReceiveResponse(request, nullptr))
-    {
-        errorMessage = L"WinHttpReceiveResponse failed: " + WinHttpErrorMessage(GetLastError());
-        return false;
-    }
-
-    std::vector<char> buffer;
-    for (;;)
-    {
-        DWORD available = 0;
-        if (!WinHttpQueryDataAvailable(request, &available))
+        if (!WinHttpCrackUrl(url.c_str(), 0, 0, &uc))
         {
-            errorMessage = L"WinHttpQueryDataAvailable failed: " + WinHttpErrorMessage(GetLastError());
-            return false;
-        }
-        if (available == 0)
-            break;
-
-        const size_t oldSize = buffer.size();
-        buffer.resize(oldSize + available);
-
-        DWORD read = 0;
-        if (!WinHttpReadData(request, buffer.data() + oldSize, available, &read))
-        {
-            errorMessage = L"WinHttpReadData failed: " + WinHttpErrorMessage(GetLastError());
+            errorMessage = L"WinHttpCrackUrl failed: " + WinHttpErrorMessage(GetLastError());
             return false;
         }
 
-        // If server lied about 'available', shrink to actual read bytes.
-        buffer.resize(oldSize + read);
-    }
+        const bool isHttps = (uc.nScheme == INTERNET_SCHEME_HTTPS);
+        const INTERNET_PORT port = uc.nPort;
 
-    responseBody.assign(buffer.begin(), buffer.end());
-    return true;
+        WinHttpHandle session(WinHttpOpen(L"stostatus-tray/1.0",
+            WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
+            WINHTTP_NO_PROXY_NAME,
+            WINHTTP_NO_PROXY_BYPASS,
+            0));
+        if (!session)
+        {
+            errorMessage = L"WinHttpOpen failed: " + WinHttpErrorMessage(GetLastError());
+            return false;
+        }
+
+        // Keep timeouts sane for a tray utility.
+        WinHttpSetTimeouts(session, 5000, 5000, 5000, 5000);
+
+        WinHttpHandle connect(WinHttpConnect(session, std::wstring(host, uc.dwHostNameLength).c_str(), port, 0));
+        if (!connect)
+        {
+            errorMessage = L"WinHttpConnect failed: " + WinHttpErrorMessage(GetLastError());
+            return false;
+        }
+
+        const std::wstring urlPath = std::wstring(path, uc.dwUrlPathLength);
+        WinHttpHandle request(WinHttpOpenRequest(connect,
+            L"GET",
+            urlPath.c_str(),
+            nullptr,
+            WINHTTP_NO_REFERER,
+            WINHTTP_DEFAULT_ACCEPT_TYPES,
+            isHttps ? WINHTTP_FLAG_SECURE : 0));
+        if (!request)
+        {
+            errorMessage = L"WinHttpOpenRequest failed: " + WinHttpErrorMessage(GetLastError());
+            return false;
+        }
+
+        // Helps some endpoints; harmless otherwise.
+        WinHttpAddRequestHeaders(request, L"Accept: */*\r\n", -1L, WINHTTP_ADDREQ_FLAG_ADD);
+
+        if (!WinHttpSendRequest(request,
+            WINHTTP_NO_ADDITIONAL_HEADERS,
+            0,
+            WINHTTP_NO_REQUEST_DATA,
+            0,
+            0,
+            0))
+        {
+            errorMessage = L"WinHttpSendRequest failed: " + WinHttpErrorMessage(GetLastError());
+            return false;
+        }
+
+        if (!WinHttpReceiveResponse(request, nullptr))
+        {
+            errorMessage = L"WinHttpReceiveResponse failed: " + WinHttpErrorMessage(GetLastError());
+            return false;
+        }
+
+        std::vector<char> buffer;
+        for (;;)
+        {
+            DWORD available = 0;
+            if (!WinHttpQueryDataAvailable(request, &available))
+            {
+                errorMessage = L"WinHttpQueryDataAvailable failed: " + WinHttpErrorMessage(GetLastError());
+                return false;
+            }
+            if (available == 0)
+                break;
+
+            const size_t oldSize = buffer.size();
+            buffer.resize(oldSize + available);
+
+            DWORD read = 0;
+            if (!WinHttpReadData(request, buffer.data() + oldSize, available, &read))
+            {
+                errorMessage = L"WinHttpReadData failed: " + WinHttpErrorMessage(GetLastError());
+                return false;
+            }
+
+            // If server lied about 'available', shrink to actual read bytes.
+            buffer.resize(oldSize + read);
+        }
+
+        responseBody.assign(buffer.begin(), buffer.end());
+        return true;
+    }
+    catch (...) {
+        return false;
+    }
 }

@@ -26,28 +26,28 @@ App::App(HINSTANCE hInstance)
 int App::Run()
 {
     if (!InitWindow())
-        return false;
+        return 10;
 
     if (!InitResources())
-        return false;
+        return 20;
 
     // Initial tray icon.
     if (!tray_.Create(hwnd_, WM_TRAYICON, iconApp_, L"STO Status: starting..."))
-        return false;
+        return 30;
 
 	// Initialize COM. for the Schedule task functionality.
     HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
     if (FAILED(hr))
     {
         MessageBoxW(nullptr, L"CoInitializeEx failed", L"COM Error", MB_ICONERROR);
-        return false;
+        return 40;
     }
 
     hr = CoInitializeSecurity(NULL,-1,NULL,NULL,RPC_C_AUTHN_LEVEL_PKT_PRIVACY,RPC_C_IMP_LEVEL_IMPERSONATE,NULL,0,NULL);
     if (FAILED(hr))
     {
         MessageBoxW(nullptr, L"CoInitializeSecurity failed", L"COM Error", MB_ICONERROR);
-        return false;
+        return 50;
     }
 
     // Start polling.
@@ -122,6 +122,7 @@ bool App::InitResources()
         std::wstring(L"Check now (") +
         Crypto::DecryptString(L"STOSEKRIT", DEFAULT_STATUS_URL) +
         L")";
+
 
     AppendMenuW(menu_, MF_STRING, IDM_OPEN_STATUS_PAGE, L"Open status page");
     AppendMenuW(menu_, MF_STRING, IDM_CHECK_NOW, checkNowText.c_str());

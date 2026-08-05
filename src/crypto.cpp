@@ -147,7 +147,7 @@ std::wstring Crypto::EncryptString(const wchar_t* passphrase,
         hAlg,
         BCRYPT_CHAINING_MODE,
         (PUCHAR)BCRYPT_CHAIN_MODE_CBC,
-        (ULONG)(wcslen(BCRYPT_CHAIN_MODE_CBC) + 1) * sizeof(wchar_t),
+        (ULONG)sizeof(BCRYPT_CHAIN_MODE_CBC),
         0
     );
     if (status < 0)
@@ -317,7 +317,7 @@ std::wstring Crypto::DecryptString(const wchar_t* passphrase,
         hAlg,
         BCRYPT_CHAINING_MODE,
         (PUCHAR)BCRYPT_CHAIN_MODE_CBC,
-        (ULONG)(wcslen(BCRYPT_CHAIN_MODE_CBC) + 1) * sizeof(wchar_t),
+        (ULONG)sizeof(BCRYPT_CHAIN_MODE_CBC),
         0
     );
     if (status < 0)

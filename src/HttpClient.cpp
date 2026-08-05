@@ -162,7 +162,9 @@ bool HttpClient::Get(const std::wstring &url, std::string &responseBody, std::ws
         responseBody.assign(buffer.begin(), buffer.end());
         return true;
     }
-    catch (...) {
+    //catch (...) {
+    catch (const std::exception& ex) {
+        MessageBoxA(nullptr, ex.what(), "STO Status Tray - Error", MB_OK | MB_ICONERROR);
         return false;
     }
 }
